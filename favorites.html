@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sevimlilar</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h2>❤️ Sevimlilar</h2>
+    <button class="hamburger" onclick="document.querySelector('nav').classList.toggle('active')">☰</button>
+    <nav>
+        <a href="index.html">Bosh sahifa</a>
+        <a href="cart.html">Savatcha (0)</a>
+        <a href="admin.html">Admin</a>
+        <a href="favorites.html">Sevimlilar (0) ❤️</a>
+    </nav>
+</header>
+
+<section class="products" style="padding-top:120px;">
+    <h2 style="text-align:center; font-size:44px; color:#ff6b9d; margin-bottom:60px;">Sevimli mahsulotlaringiz</h2>
+    <div class="product-list" id="favoritesList" style="max-width:1400px; margin:0 auto;"></div>
+
+    <div id="emptyFavorites" style="display:none; text-align:center; padding:100px 20px; color:#999; font-size:20px;">
+        ❤️ Hozircha sevimli mahsulot yo‘q<br><br>
+        <a href="index.html" style="color:#ff6b9d; text-decoration:none; font-weight:600;">Mahsulotlarni ko‘rish →</a>
+    </div>
+</section>
+
+<footer>
+    © 2026 Premium Do‘kon
+</footer>
+
+<script src="script.js"></script>
+
+<script>
+// Sevimlilarni ko‘rsatish
+function renderFavorites() {
+    let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+    const list = document.getElementById("favoritesList");
+    const emptyMsg = document.getElementById("emptyFavorites");
+
+    if (favorites.length === 0) {
+        emptyMsg.style.display = "block";
+        list.innerHTML = "";
+        return;
+    }
+
+    emptyMsg.style.display = "none";
+    list.innerHTML = "";
+
+    favorites.forEach((p, i) => {
+        list.innerHTML += `
+        <div class="product">
+            <div class="favorite active" onclick="toggleFavoriteFromFav(${i})">❤️</div>
+            <img src="${p.image}" alt="${p.name}">
+            <div class="product-info">
+                <h3>${p.name}</h3>
+                <p class="price">${Number(p.price).toLocaleString()} so‘m</p>
+                <p class="desc">${p.description || "Yuqori sifatli va yangi mahsulot"}</p>
+                <div class="quantity">
+                    <button onclick="changeQtyFav(${i}, -1)">−</button>
+                    <span id="qty-fav-${i}">1</span>
+                    <button onclick="changeQtyFav(${i}, 1)">+</button>
+                </div>
+                <button onclick="addToCartFromFav(${i})">Savatchaga qo‘shish</button>
+            </div>
+        </div>`;
+    });
+}
+
+// Sevimlilardan o‘chirish va savatchaga qo‘shish funksiyalari
+function toggleFavoriteFromFav(index) {
+    favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+    favorites.splice(index, 1);
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+    renderFavorites();
+    updateFavoritesCount();
+    alert("♡ Sevimlilardan o‘chirildi");
+}
+
+function changeQtyFav(index, change) {
+    const qtyEl = document.getElementById(`qty-fav-${index}`);
+    let qty = parseInt(qtyEl.textContent);
+    qty = Math.max(1, qty + change);
+    qtyEl.textContent = qty;
+}
+
+function addToCartFromFav(index) {
+    favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+    const qty = parseInt(document.getElementById(`qty-fav-${index}`)?.textContent || 1);
+    const product = { ...favorites[index], quantity: qty };
+
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const existing = cart.find(item => item.name === product.name);
+    if (existing) {
+        existing.quantity += qty;
+    } else {
+        cart.push(product);
+    }
+    localStorage.setItem("cart", JSON.stringify(cart));
+    alert("✅ Savatchaga qo‘shildi!");
+    updateCartCount();
+}
+</script>
+
+</body>
+</html>

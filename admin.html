@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h2>⚙️ Admin Panel</h2>
+    <button class="hamburger" onclick="document.querySelector('nav').classList.toggle('active')">☰</button>
+    <nav>
+        <a href="index.html">Saytga qaytish</a>
+    </nav>
+</header>
+
+<section class="products" style="padding-top:120px; max-width:800px; margin:0 auto;">
+    <h2 style="text-align:center; margin-bottom:40px; color:#ff6b9d;">Yangi mahsulot qo‘shish</h2>
+
+    <div style="background:white; padding:40px; border-radius:30px; box-shadow:0 15px 40px rgba(255,182,193,0.2);">
+        <input id="name" placeholder="Mahsulot nomi" style="width:100%; padding:16px; border-radius:20px; border:2px solid #ffd8e4; margin-bottom:20px;">
+        <input id="price" type="number" placeholder="Narxi (so‘mda)" style="width:100%; padding:16px; border-radius:20px; border:2px solid #ffd8e4; margin-bottom:20px;">
+
+        <select id="category" style="width:100%; padding:16px; border-radius:20px; border:2px solid #ffd8e4; margin-bottom:20px;">
+            <option value="Hammasi">Hammasi</option>
+            <option value="Mevalar">Mevalar</option>
+            <option value="Telefonlar">Telefonlar</option>
+        </select>
+
+        <textarea id="description" placeholder="Qisqa tavsif (masalan: Shirin va suvli yangi qulupnay)" style="width:100%; padding:16px; border-radius:20px; border:2px solid #ffd8e4; margin-bottom:20px; height:120px; background:#fff8f5;"></textarea>
+
+        <div style="margin:30px 0;">
+            <label style="font-weight:600; color:#ff6b9d;">Rasm yuklash</label>
+            <input type="file" id="imageInput" accept="image/*" style="padding:10px; border:2px dashed #ffd8e4; border-radius:20px; width:100%; margin-top:10px;">
+            <div id="preview" style="margin-top:20px; text-align:center;"></div>
+        </div>
+
+        <button onclick="addProduct()" style="width:100%; padding:18px; background:#ff6b9d; color:white; border:none; border-radius:50px; font-size:20px;">Qo‘shish</button>
+    </div>
+
+    <h2 style="text-align:center; margin:80px 0 40px; color:#ff6b9d;">Buyurtmalar</h2>
+    <div id="ordersList" style="background:white; padding:30px; border-radius:30px; box-shadow:0 15px 40px rgba(255,182,193,0.2);"></div>
+</section>
+
+<footer>© 2026 Premium Do‘kon</footer>
+
+<script>
+// Rasm preview
+document.getElementById("imageInput").addEventListener("change", function(e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById("preview");
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            preview.innerHTML = `<img src="${event.target.result}" style="max-width:100%; max-height:300px; border-radius:20px;">`;
+        }
+        reader.readAsDataURL(file);
+    }
+});
+
+// Mahsulot qo‘shish
+function addProduct() {
+    const name = document.getElementById("name").value.trim();
+    const price = document.getElementById("price").value.trim();
+    const category = document.getElementById("category").value;
+    const description = document.getElementById("description").value.trim() || "Yuqori sifatli mahsulot";
+    const fileInput = document.getElementById("imageInput");
+
+    if (!name || !price || !fileInput.files[0]) {
+        alert("To‘ldiring va rasm tanlang!");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        let products = JSON.parse(localStorage.getItem("products")) || [];
+        products.push({ name, price: Number(price), image: event.target.result, category, description });
+        localStorage.setItem("products", JSON.stringify(products));
+
+        // Tozalash
+        document.getElementById("name").value = "";
+        document.getElementById("price").value = "";
+        document.getElementById("category").value = "Hammasi";
+        document.getElementById("description").value = "";
+        document.getElementById("imageInput").value = "";
+        document.getElementById("preview").innerHTML = "";
+
+        alert("✅ Qo‘shildi!");
+    }
+    reader.readAsDataURL(fileInput.files[0]);
+}
+
+// Buyurtmalar
+function renderOrders() {
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+    const list = document.getElementById("ordersList");
+    if (orders.length === 0) {
+        list.innerHTML = "<p style='text-align:center; color:#999;'>Buyurtma yo‘q 😊</p>";
+        return;
+    }
+    list.innerHTML = orders.reverse().map(o => `
+        <div style="padding:20px; border-bottom:1px solid #ffd8e4; margin-bottom:20px;">
+            <p><strong>#${o.id}</strong> | ${o.date} ${o.time}</p>
+            <p><strong>Mijoz:</strong> ${o.customer.name} | ${o.customer.phone}</p>
+            <p><strong>Jami:</strong> ${o.total.toLocaleString()} so‘m</p>
+            <select onchange="changeStatus(${o.id}, this.value)" style="padding:10px; border-radius:20px; border:2px solid #ffd8e4;">
+                <option ${o.status==='Yangi'?'selected':''}>Yangi</option>
+                <option ${o.status==='Qabul qilindi'?'selected':''}>Qabul qilindi</option>
+            </select>
+        </div>
+    `).join("");
+}
+
+function changeStatus(id, status) {
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+    const order = orders.find(o => o.id === id);
+    if (order) order.status = status;
+    localStorage.setItem("orders", JSON.stringify(orders));
+}
+
+renderOrders();
+</script>
+<div class="dark-toggle" onclick="toggleDarkMode()">
+    <span>🌙</span>
+</div>
+
+<script>
+function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    const icon = document.querySelector('.dark-toggle span');
+    icon.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+}
+
+// Sahifa yuklanganda dark mode ni tiklash
+if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark');
+    document.querySelector('.dark-toggle span').textContent = '☀️';
+}
+</script>
+</body>
+</html>

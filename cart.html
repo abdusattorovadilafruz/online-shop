@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Savatcha</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h2>🛒 Savatcha</h2>
+    <button class="hamburger" onclick="document.querySelector('nav').classList.toggle('active')">☰</button>
+    <nav>
+        <a href="index.html">Ortga</a>
+    </nav>
+</header>
+
+<section class="products" style="padding-top:120px; padding-bottom:100px;">
+    <h2 style="text-align:center; font-size:44px; color:#ff6b9d; margin-bottom:60px;">Savatchangiz</h2>
+
+    <!-- Savatcha elementlari -->
+    <div id="cartItems" style="max-width:800px; margin:0 auto 50px;"></div>
+
+    <!-- Jami summa -->
+    <div style="text-align:center; margin:40px 0;">
+        <h3 id="total" style="font-size:32px; color:#ff6b9d; font-weight:800;"></h3>
+    </div>
+
+    <!-- Buyurtma berish formasi -->
+    <!-- Buyurtma berish formasi -->
+<div style="max-width:600px; margin:60px auto 0; background:white; padding:50px; border-radius:40px; box-shadow:0 25px 60px rgba(255,182,193,0.3);">
+    <h3 style="text-align:center; color:#ff6b9d; margin-bottom:40px; font-size:28px; font-weight:700;">
+        Yetkazib berish ma'lumotlari
+    </h3>
+
+    <div style="margin-bottom:30px;">
+        <label style="display:block; margin-bottom:12px; font-size:18px; color:#ff6b9d; font-weight:600;">Ismingiz</label>
+        <input id="name" type="text" placeholder="Masalan: Aliyeva Madina" required 
+               style="width:100%; padding:18px 24px; border-radius:30px; border:2px solid #ffd8e4; background:#fff8f5; font-size:17px; transition:all 0.3s;">
+    </div>
+
+    <div style="margin-bottom:30px;">
+        <label style="display:block; margin-bottom:12px; font-size:18px; color:#ff6b9d; font-weight:600;">Telefon raqamingiz</label>
+        <input id="phone" type="tel" placeholder="+998 XX XXX XX XX" required 
+               style="width:100%; padding:18px 24px; border-radius:30px; border:2px solid #ffd8e4; background:#fff8f5; font-size:17px; transition:all 0.3s;">
+    </div>
+
+    <div style="margin-bottom:40px;">
+        <label style="display:block; margin-bottom:12px; font-size:18px; color:#ff6b9d; font-weight:600;">Yetkazib berish manzili</label>
+        <textarea id="address" placeholder="Masalan: Toshkent sh., Yunusobod tumani, 45-uy, 12-xonadon" required 
+                  style="width:100%; padding:18px 24px; border-radius:30px; border:2px solid #ffd8e4; background:#fff8f5; font-size:17px; height:140px; resize:none; transition:all 0.3s;"></textarea>
+    </div>
+
+    <button onclick="order()" 
+            style="width:100%; padding:22px; background:linear-gradient(135deg, #ff6b9d, #ffa8c5); color:white; border:none; border-radius:50px; font-size:21px; font-weight:700; cursor:pointer; box-shadow:0 12px 35px rgba(255,107,157,0.4); transition:all 0.4s;">
+        Buyurtma berish 💖
+    </button>
+</div>
+
+    <!-- Bo‘sh savatcha xabari (agar kerak bo‘lsa) -->
+    <div id="emptyCart" style="display:none; text-align:center; padding:80px 20px; color:#999; font-size:20px;">
+        🛒 Savatchangiz hozircha bo‘sh<br><br>
+        <a href="index.html" style="color:#ff6b9d; text-decoration:none; font-weight:600;">Mahsulotlarni ko‘rish →</a>
+    </div>
+</section>
+
+<footer>
+    © 2026 Premium Do‘kon. Barcha huquqlar himoyalangan.
+</footer>
+
+<script>
+// BOT TOKEN – to‘g‘ri ekanligiga ishonch hosil qil!
+const BOT_TOKEN = "8469839417:AAE2I3HatnOMhraVhimevmx_RujqE-qIzRA";
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let total = 0;
+const box = document.getElementById("cartItems");
+const emptyCartMsg = document.getElementById("emptyCart");
+const totalElement = document.getElementById("total");
+
+// Savatcha bo‘sh bo‘lsa – yoqimli xabar
+if (cart.length === 0) {
+    emptyCartMsg.style.display = "block";
+    totalElement.style.display = "none"; // jami yashiramiz
+} else {
+    totalElement.style.display = "block";
+    cart.forEach(p => {
+        total += p.price * p.quantity;
+
+        box.innerHTML += `
+        <div class="product" style="margin-bottom:40px; position:relative;">
+            <img src="${p.image}" alt="${p.name}" style="width:80%; height:260px; object-fit:contain; margin:40px auto 0; display:block; border-radius:30px; background:#fff8f5; padding:20px; box-shadow:0 15px 30px rgba(0,0,0,0.1);">
+            <div class="product-info" style="padding:40px 30px 30px; margin-top:-40px;">
+                <h3 style="font-size:26px; text-align:center;">${p.name}</h3>
+                <p style="text-align:center; font-size:20px; color:#777; margin:15px 0;">${p.quantity} dona</p>
+                <p style="text-align:center; font-size:28px; color:#ff6b9d; font-weight:800;">
+                    ${(p.price * p.quantity).toLocaleString()} so‘m
+                </p>
+            </div>
+        </div>`;
+    });
+
+    totalElement.innerText = "Jami: " + total.toLocaleString() + " so‘m";
+}
+
+// Telegramga xabar yuborish
+async function sendToTelegram(message) {
+    let chatId = localStorage.getItem("telegramChatId");
+
+    if (!chatId) {
+        try {
+            const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates`);
+            const data = await res.json();
+            if (data.ok && data.result.length > 0) {
+                const latest = data.result[data.result.length - 1];
+                if (latest.message?.chat?.id) {
+                    chatId = latest.message.chat.id;
+                    localStorage.setItem("telegramChatId", chatId);
+                }
+            }
+        } catch (e) {
+            console.log("Chat ID olishda xato");
+        }
+    }
+
+    if (!chatId) {
+        alert("Botga ulanishda muammo. Botga /start deb yozing va qayta urinib ko‘ring.");
+        return false;
+    }
+
+    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+    try {
+        await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: message,
+                parse_mode: "HTML"
+            })
+        });
+        return true;
+    } catch (err) {
+        console.log("Xabar yuborishda xato:", err);
+        return false;
+    }
+}
+
+// Buyurtma berish
+async function order() {
+    const name = document.getElementById("name").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const address = document.getElementById("address").value.trim();
+
+    if (!name || !phone || !address || cart.length === 0) {
+        alert("Iltimos, barcha maydonlarni to‘ldiring va savatchada mahsulot bo‘lsin!");
+        return;
+    }
+
+    const newOrder = {
+        id: Date.now(),
+        customer: { name, phone, address },
+        items: [...cart],
+        total,
+        date: new Date().toLocaleDateString("uz-UZ"),
+        time: new Date().toLocaleTimeString("uz-UZ", {hour: "2-digit", minute: "2-digit"}),
+        status: "Yangi"
+    };
+
+    // localStorage ga saqlash
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+    orders.push(newOrder);
+    localStorage.setItem("orders", JSON.stringify(orders));
+
+    // Telegramga xabar
+    let message = `<b>🛒 YANGI BUYURTMA!</b>\n\n`;
+    message += `<b>#${newOrder.id}</b> | ${newOrder.date} ${newOrder.time}\n\n`;
+    message += `<b>👤 Mijoz:</b> ${name}\n`;
+    message += `<b>📞 Telefon:</b> <a href="tel:${phone}">${phone}</a>\n`;
+    message += `<b>📍 Manzil:</b> ${address}\n\n`;
+    message += `<b>🛍 Mahsulotlar:</b>\n`;
+    newOrder.items.forEach(item => {
+        message += `• ${item.name} × ${item.quantity} = ${(item.price * item.quantity).toLocaleString()} so‘m\n`;
+    });
+    message += `\n<b>💰 Jami:</b> ${total.toLocaleString()} so‘m`;
+
+    const sent = await sendToTelegram(message);
+
+    if (sent) {
+        alert("🎉 Buyurtmangiz qabul qilindi!\nTelegram orqali tez orada bog‘lanamiz ❤️");
+    } else {
+        alert("🎉 Buyurtma qabul qilindi, lekin Telegramga xabar yuborishda muammo bo‘ldi.\nAdmin paneldan ko‘rishingiz mumkin.");
+    }
+
+    // Savatcha tozalash
+    cart = [];
+    localStorage.removeItem("cart");
+    location.reload();
+}
+</script>
+<div class="dark-toggle" onclick="toggleDarkMode()">
+    <span>🌙</span>
+</div>
+
+<script>
+function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    const icon = document.querySelector('.dark-toggle span');
+    icon.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+}
+
+// Sahifa yuklanganda dark mode ni tiklash
+if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark');
+    document.querySelector('.dark-toggle span').textContent = '☀️';
+}
+</script>
+
+</body>
+</html>
