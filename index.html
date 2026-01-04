@@ -20,18 +20,41 @@
 </header>
 
 <section class="hero">
-    <h1>Eng shirin mahsulotlar</h1>
-    <p>Tabiiy, yangi va mazali – siz uchun!</p>
-    <button onclick="document.getElementById('shop').scrollIntoView({behavior: 'smooth'})">Xarid qilish</button>
+    <h1>Online xarid – oson va qulay</h1>
+    <p>Istagan mahsulotingizni uyga yetkazib beramiz</p>
+    <button onclick="document.getElementById('shop').scrollIntoView({behavior: 'smooth'})">
+        Mahsulotlarni ko‘rish
+    </button>
 </section>
 
 <section class="products">
     <h2>Mahsulotlar</h2>
-    <div class="categories" style="text-align:center; margin-bottom:40px;">
-        <button onclick="filterCategory('Hammasi')" class="active">Hammasi</button>
-        <button onclick="filterCategory('Mevalar')">Mevalar</button>
-        <button onclick="filterCategory('Telefonlar')">Telefonlar</button>
-    </div>
+    <div class="categories">
+    <button onclick="filterCategory('Hammasi')" class="active">
+        <span class="icon">🌟</span>
+        <span class="label">Hammasi</span>
+    </button>
+    <button onclick="filterCategory('Mevalar')">
+        <span class="icon">🍎</span>
+        <span class="label">Mevalar</span>
+    </button>
+    <button onclick="filterCategory('Telefonlar')">
+        <span class="icon">📱</span>
+        <span class="label">Telefonlar</span>
+    </button>
+    <button onclick="filterCategory('Aksessuarlar')">
+        <span class="icon">🎧</span>
+        <span class="label">Aksessuarlar</span>
+    </button>
+    <button onclick="filterCategory('Kiyim-kechak')">
+        <span class="icon">👕</span>
+        <span class="label">Kiyim-kechak</span>
+    </button>
+    <button onclick="filterCategory('Uy-ro‘zg‘or')">
+        <span class="icon">🏡</span>
+        <span class="label">Uy-ro‘zg‘or</span>
+    </button>
+</div>
     <input type="text" id="search" placeholder="Mahsulot qidirish..." oninput="searchProducts()" style="max-width:500px; margin:0 auto 40px; display:block; padding:16px; border-radius:50px; border:2px solid #ffd8e4; text-align:center;">
     <div class="product-list" id="shop"></div>
 </section>
